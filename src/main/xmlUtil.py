@@ -2,6 +2,7 @@
 import xml.etree.ElementTree as ET
 
 from message import TextMessage
+from src.main import msgTypeConstant
 
 XML_PREFIX = '<![CDATA['
 XML_SUFFIX = ']]>'
@@ -15,7 +16,7 @@ def parse_xml(xml_str):
     CreateTime = root.find("CreateTime").text
     MsgType = root.find("MsgType").text
     # 文本消息
-    if 'text' == MsgType.lower():
+    if msgTypeConstant.TEXT == MsgType.lower():
         Content = root.find("Content").text
         return TextMessage(FromUserName, ToUserName, CreateTime, Content)
     # TODO 其他类型消息暂不处理
