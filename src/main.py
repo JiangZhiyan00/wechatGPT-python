@@ -1,12 +1,18 @@
 #!/usr/bin/python3
 # coding=utf-8
 import hashlib
+import os
+import sys
 from configparser import ConfigParser
 from fastapi import FastAPI
 from starlette.requests import Request
 from starlette.responses import Response
 
 import uvicorn
+
+curPath = os.path.abspath(os.path.dirname(__file__))
+rootPath = os.path.split(curPath)[0]
+sys.path.append(rootPath)
 
 import msgTypeConstant
 import chatGPT
@@ -15,7 +21,7 @@ from xmlUtil import parse_xml
 route = '/callback'
 EMPTY_STR = ''
 cf = ConfigParser()
-cf.read('resources/config.ini', encoding="utf-8")
+cf.read('config.ini', encoding="utf-8")
 
 app = FastAPI(title='wechatGPT-api', description='wechatGPT接口文档', version='1.0.0')
 

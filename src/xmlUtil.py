@@ -2,7 +2,7 @@
 import xml.etree.ElementTree as ET
 
 from message import TextMessage
-from src.main import msgTypeConstant
+import msgTypeConstant
 
 XML_PREFIX = '<![CDATA['
 XML_SUFFIX = ']]>'
