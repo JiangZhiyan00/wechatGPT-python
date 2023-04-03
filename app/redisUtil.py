@@ -1,18 +1,19 @@
 # coding=utf-8
 import redis
 
-from main import cf
+from config import get_config
 
 
 class RedisUtil:
-    def __init__(self, host=cf.get('redis', 'host'), port=cf.get('redis', 'port'), db=cf.get('redis', 'db'),
-                 password=cf.get('redis', 'password'), decode=True):
+    def __init__(self, host=get_config('redis', 'host'), port=get_config('redis', 'port'), db=get_config('redis', 'db'),
+                 password=get_config('redis', 'password'), decode=True):
         pool = redis.ConnectionPool(host=host, port=port, db=db, password=password, decode_responses=decode)
         self.r = redis.Redis(connection_pool=pool)
 
     # 是否存在key的缓存
     def exist(self, key):
         return self.r.exists(key)
+
     ###################################################      string方法       ###################################################
     # 加入缓存,存在会替换
     def set_str(self, key, value):  # value可以为复杂的json

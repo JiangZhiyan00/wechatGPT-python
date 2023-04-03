@@ -1,15 +1,11 @@
 FROM python:3.9-slim
 
-WORKDIR /usr/local/app/
+WORKDIR /app/
 
-ENV TZ=Japan
+ADD app .
 
-ADD src ./src
-ADD requirements.txt /usr/local/app/requirements.txt
+RUN pip3 install --no-cache-dir -r requirements.txt
 
-#RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && $TZ > /etc/timezone
-RUN pip3 install -r requirements.txt
+EXPOSE 80
 
-EXPOSE 8009
-
-ENTRYPOINT ["python3", "/usr/local/app/src/main.py"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]

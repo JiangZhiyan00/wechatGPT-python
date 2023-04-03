@@ -1,5 +1,0 @@
-uvicorn
-fastapi
-starlette
-openai
-redis

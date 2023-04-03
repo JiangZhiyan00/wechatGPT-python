@@ -4,21 +4,21 @@ import time
 
 import openai
 
-import xmlUtil
-from main import cf
+from config import get_config
 from message import TextMessage
 from redisUtil import RedisUtil
+from xmlUtil import get_answer_xml
 
 EMPTY_STR = ''
 USER_KEY_PREFIX = "wx_users:"
 ALL_QUESTIONS_KEY_PREFIX = "all_questions:"
 USER_QUESTIONS_KEY_PREFIX = "wx_users-questions:"
-openai.api_key = cf.get('openai', 'key')
-intervalFlag = cf.get('server', 'interval_flag')
-interval = int(cf.get('server', 'interval'))
-too_many_question = cf.get('server', 'too_many_question')
-session_time = int(cf.get('server', 'session_time'))
-answer_cache_time = int(cf.get('server', 'answer_cache_time'))
+openai.api_key = get_config('openai', 'key')
+intervalFlag = get_config('server', 'interval_flag')
+interval = int(get_config('server', 'interval'))
+too_many_question = get_config('server', 'too_many_question')
+session_time = int(get_config('server', 'session_time'))
+answer_cache_time = int(get_config('server', 'answer_cache_time'))
 redisUtil = RedisUtil()
 
 
@@ -57,4 +57,4 @@ def getAnswer(message: TextMessage):
     except Exception as ex:
         print('openai回复信息错误:' + str(ex))
         answer.Content = "ChatGPT正忙,请稍后再试..."
-    return xmlUtil.get_answer_xml(answer)
+    return get_answer_xml(answer)
