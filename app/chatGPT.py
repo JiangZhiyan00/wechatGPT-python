@@ -10,16 +10,17 @@ from redisUtil import RedisUtil
 from xmlUtil import get_answer_xml
 
 EMPTY_STR = ''
+OPENAI_KEYS = get_config('openai', 'keys').split(',')
 USER_KEY_PREFIX = "wx_users:"
 ALL_QUESTIONS_KEY_PREFIX = "all_questions:"
 USER_QUESTIONS_KEY_PREFIX = "wx_users-questions:"
-openai.api_key = get_config('openai', 'key')
 intervalFlag = get_config('server', 'interval_flag')
 interval = int(get_config('server', 'interval'))
 too_many_question = get_config('server', 'too_many_question')
 session_time = int(get_config('server', 'session_time'))
 answer_cache_time = int(get_config('server', 'answer_cache_time'))
 redisUtil = RedisUtil()
+key_point = -1
 
 
 def getAnswer(message: TextMessage):
@@ -39,6 +40,10 @@ def getAnswer(message: TextMessage):
             user_message = {'content': message.Content, 'role': 'user'}
             user_messages.append(user_message)
             redisUtil.add_str_ex(USER_KEY_PREFIX + message.FromUserName, interval, 0)
+            # 随机拿一个key
+            global key_point
+            key_point = (key_point + 1) % len(OPENAI_KEYS)
+            openai.api_key = OPENAI_KEYS[key_point]
             # 调用openai获取回复
             openaiMessage = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
