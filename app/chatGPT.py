@@ -19,6 +19,7 @@ interval = int(get_config('server', 'interval'))
 too_many_question = get_config('server', 'too_many_question')
 session_time = int(get_config('server', 'session_time'))
 answer_cache_time = int(get_config('server', 'answer_cache_time'))
+context_len = int(get_config('server', 'context_len'))
 redisUtil = RedisUtil()
 key_point = -1
 
@@ -27,20 +28,22 @@ def getAnswer(message: TextMessage):
     answer = TextMessage(message.ToUserName, message.FromUserName, str(int(time.time())), EMPTY_STR)
     try:
         if redisUtil.is_hash_key_exist(ALL_QUESTIONS_KEY_PREFIX + message.FromUserName, message.Content):
-            answer.Content = redisUtil.get_value(ALL_QUESTIONS_KEY_PREFIX + message.FromUserName,
-                                                 message.Content).strip()
+            answer.Content = '[缓存回复]\n' + redisUtil.get_value(ALL_QUESTIONS_KEY_PREFIX + message.FromUserName,
+                                                              message.Content).strip()
             print('openai-cache回复:' + answer.Content)
         elif intervalFlag and redisUtil.exist(USER_KEY_PREFIX + message.FromUserName):
             answer.Content = too_many_question
         else:
             messages = redisUtil.get_all_list_items(USER_QUESTIONS_KEY_PREFIX + message.FromUserName)
+            if len(messages) > context_len:
+                messages = messages[-context_len:]
             user_messages = []
             for msg in messages:
                 user_messages.append(json.loads(msg, object_hook=dict))
             user_message = {'content': message.Content, 'role': 'user'}
             user_messages.append(user_message)
             redisUtil.add_str_ex(USER_KEY_PREFIX + message.FromUserName, interval, 0)
-            # 随机拿一个key
+            # 轮询key
             global key_point
             key_point = (key_point + 1) % len(OPENAI_KEYS)
             openai.api_key = OPENAI_KEYS[key_point]
@@ -62,4 +65,6 @@ def getAnswer(message: TextMessage):
     except Exception as ex:
         print('openai回复信息错误:' + str(ex))
         answer.Content = "ChatGPT正忙,请稍后再试..."
+        if 'You exceeded your current quota, please check your plan and billing details.' == str(ex):
+            answer.Content = "OpenAI账号额度已用完,请联系开发者续费或下个月再来吧。"
     return get_answer_xml(answer)
